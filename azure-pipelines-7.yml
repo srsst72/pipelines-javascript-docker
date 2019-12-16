@@ -1,0 +1,36 @@
+# Docker
+- task: DockerCompose@0
+  inputs:
+    containerregistrytype: 'Azure Container Registry'
+    azureSubscription: 'Azure subscription 1(86e49a51-2652-4ea0-abe6-27dedb559dd5)'
+    azureContainerRegistry: '{"loginServer":"mycontainerregistry72.azurecr.io", "id" : "/subscriptions/86e49a51-2652-4ea0-abe6-27dedb559dd5/resourceGroups/mycontainerregistry72/providers/Microsoft.ContainerRegistry/registries/mycontainerregistry72"}'
+    dockerComposeFile: '**/docker-compose.yml'
+    action: 'Run services'
+# Build a Docker image 
+# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
+
+trigger:
+- master
+
+resources:
+- repo: self
+
+variables:
+  tag: '$(Build.BuildId)'
+
+stages:
+- stage: Build
+  displayName: Build image
+  jobs:  
+  - job: Build
+    displayName: Build
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: Docker@2
+      displayName: Build an image
+      inputs:
+        command: build
+        dockerfile: '$(Build.SourcesDirectory)/app/Dockerfile'
+        tags: |
+          $(tag)
